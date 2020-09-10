@@ -18,6 +18,9 @@ class BasicGoalsList extends StatefulWidget {
 class _BasicGoalsListState extends State<BasicGoalsList> {
   //String password = "Password";
   List<BasicGoal> basicGoals;
+  List<BasicGoal> activeGoals;
+  List<BasicGoal> incompleteGoals;
+  List<BasicGoal> completedGoals;
   bool fetchDataState;
 
   @override
@@ -31,7 +34,63 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
 
     return Column(
       children: <Widget>[
-        Center(child: getTextWidgets()),
+        Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Active Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  flex: 10,
+                  child: getTextWidgets("active")
+                )
+
+              ],
+            )
+        ),
+        Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Completed Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                    flex: 10,
+                    child: getTextWidgets("complete")
+                )
+
+              ],
+            )
+        ),
+        Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Incomplete Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                    flex: 10,
+                    child: getTextWidgets("incomplete")
+                )
+
+              ],
+            )
+        ),
         FloatingActionButton(
             tooltip: 'Add new goals',
             child: Icon(Icons.add),
@@ -67,64 +126,180 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
       setState(() {
         //print("Set State called");
         basicGoals = value;
+        activeGoals=[];
+        completedGoals=[];
+        incompleteGoals=[];
+        for(BasicGoal goal in basicGoals){
+          if(goal.active){
+            activeGoals.add(goal);
+          }else{
+            if(goal.completed){
+              completedGoals.add(goal);
+            }else{
+              incompleteGoals.add(goal);
+            }
+          }
+        }
         fetchDataState = false;
       });
     });
   }
 
-  Widget getTextWidgets() {
-    if (basicGoals == null) {
-      return CircularProgressIndicator();
-    }
-
+  Widget ordinaryView(){
     return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: basicGoals
             .map((e) => Row(children: <Widget>[
-                  Card(
-                    child: InkWell(
-                      splashColor: Colors.blue.withAlpha(30),
-                      onLongPress: () {
-                        //showAlertDialog(context, e.id);
-                      },
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return BasicGoalDetails(goal:e);
-                          }),
-                        ).then((value) {
-                          setState(() {
-                            //fetchData();
-                            basicGoals = null;
-                          });
-                        });
-                      },
-                      child: Container(
-                        width: 350,
-                        height: 100,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  e.goalName,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20),
-                                ),
-                              ],
-                            ),
-                          ],
+          Card(
+            child: InkWell(
+              splashColor: Colors.blue.withAlpha(30),
+              onLongPress: () {
+                //showAlertDialog(context, e.id);
+              },
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return BasicGoalDetails(goal:e);
+                  }),
+                ).then((value) {
+                  setState(() {
+                    //fetchData();
+                    basicGoals = null;
+                  });
+                });
+              },
+              child: Container(
+                width: 350,
+                height: 100,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          e.goalName,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
                         ),
-                      ),
+                      ],
                     ),
-                  )
-                ]))
+                  ],
+                ),
+              ),
+            ),
+          )
+        ]))
             .toList());
   }
 
+  Widget scrollableView(List<BasicGoal> goals){
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
+      itemCount: goals.length,
+      itemBuilder: (context, index) {
+        final e = goals[index];
+        return Container(
+            child: Card(
+              child: InkWell(
+                splashColor: Colors.blue.withAlpha(30),
+                onLongPress: () {
+                  //showAlertDialog(context, e.id);
+                  SQLiteBasicGoalDatabaseService().deleteBasicGoal(e.id);
+                  setState(() {
+                    basicGoals=null;
+                  });
+                },
+                onTap: () {
+                  calculateEndTimeDaysReturnString(e.startTime);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return BasicGoalDetails(goal:e);
+                    }),
+                  ).then((value) {
+                    setState(() {
+                      //fetchData();
+                      basicGoals = null;
+                    });
+                  });
+                },
+                child: Container(
+                  width: 100,
+                  height: 50,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              e.goalName,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Container(),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              calculateEndTimeDaysReturnString(e.endTime),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+        );
+      },
+    );
+  }
+
+  Widget getTextWidgets(String typeOfGoals) {
+    if (basicGoals == null) {
+      return CircularProgressIndicator();
+    }
+
+    if(typeOfGoals=="active"){
+      if(activeGoals!=null && activeGoals.length>0)
+        return scrollableView(activeGoals);
+    }else if(typeOfGoals=="complete"){
+      if(completedGoals!=null && completedGoals.length>0)
+        return scrollableView(completedGoals);
+    }else if(typeOfGoals=="incomplete"){
+      if(incompleteGoals!=null && incompleteGoals.length>0)
+        return scrollableView(incompleteGoals);
+    }
+    return Container();
+
+  }
+
+  String calculateEndTimeDaysReturnString(DateTime date) {
+    DateTime now = DateTime.now();
+    if(date==null) return "No limit fixed";
+    int difference = now.difference(date).inDays;
+    if(difference<0){
+      difference*=-1;
+      return "$difference Days left";
+    }else if(difference==0){
+      return "Ends today";
+    }else{
+      return "$difference days overdue";
+    }
+    
+    
+  }
   /*
   void _refreshData() {
     setState(() {
