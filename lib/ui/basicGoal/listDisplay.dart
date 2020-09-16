@@ -32,65 +32,16 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
   Widget buildOutput() {
     fetchData();
 
+    return buildActiveLists();
+  }
+
+  Widget buildActiveLists(){
     return Column(
       children: <Widget>[
-        Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    "Active Goals",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                  flex: 10,
-                  child: getTextWidgets("active")
-                )
-
-              ],
-            )
-        ),
-        Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    "Completed Goals",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                    flex: 10,
-                    child: getTextWidgets("complete")
-                )
-
-              ],
-            )
-        ),
-        Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    "Incomplete Goals",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                    flex: 10,
-                    child: getTextWidgets("incomplete")
-                )
-
-              ],
-            )
-        ),
+        //TODO add the active goals text widget
+        getTextWidgets("active"),
+        getTextWidgets("complete"),
+        getTextWidgets("incomplete"),
         FloatingActionButton(
             tooltip: 'Add new goals',
             child: Icon(Icons.add),
@@ -195,71 +146,104 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
   }
 
   Widget scrollableView(List<BasicGoal> goals){
-    return ListView.builder(
+    return
+
+    ListView.builder(
       scrollDirection: Axis.vertical,
       shrinkWrap: true,
       itemCount: goals.length,
       itemBuilder: (context, index) {
         final e = goals[index];
-        return Container(
-            child: Card(
-              child: InkWell(
-                splashColor: Colors.blue.withAlpha(30),
-                onLongPress: () {
-                  //showAlertDialog(context, e.id);
-                  SQLiteBasicGoalDatabaseService().deleteBasicGoal(e.id);
-                  setState(() {
-                    basicGoals=null;
-                  });
-                },
-                onTap: () {
-                  calculateEndTimeDaysReturnString(e.startTime);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return BasicGoalDetails(goal:e);
-                    }),
-                  ).then((value) {
-                    setState(() {
-                      //fetchData();
-                      basicGoals = null;
-                    });
-                  });
-                },
-                child: Container(
-                  width: 100,
-                  height: 50,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Row(
+
+        return Dismissible(
+          // Each Dismissible must contain a Key. Keys allow Flutter to
+          // uniquely identify widgets.
+            key: Key(e.id.toString()),
+            // Provide a function that tells the app
+            // what to do after an item has been swiped away.
+            onDismissed: (direction) {
+              // Remove the item from the data source.
+              if(direction==DismissDirection.startToEnd){
+                //print("Its a right swipe");
+                e.active=false;
+                e.completed=true;
+                SQLiteBasicGoalDatabaseService().updateBasicGoal(e);
+              }else if(direction==DismissDirection.endToStart){
+                //print("Its a left swipe");
+                e.active=false;
+                e.completed=false;
+                SQLiteBasicGoalDatabaseService().updateBasicGoal(e);
+              }
+              setState(() {
+                goals.removeAt(index);
+              });
+
+              // Then show a snackbar.
+              Scaffold.of(context)
+                  .showSnackBar(SnackBar(content: Text(e.goalName+" dismissed")));
+            },
+            // Show a red background as the item is swiped away.
+            background: Container(color: Colors.blue),
+            child: Container(
+                child: Card(
+                  child: InkWell(
+                    splashColor: Colors.blue.withAlpha(30),
+                    onLongPress: () {
+                      //showAlertDialog(context, e.id);
+                      SQLiteBasicGoalDatabaseService().deleteBasicGoal(e.id);
+                      setState(() {
+                        basicGoals=null;
+                      });
+                    },
+                    onTap: () {
+                      calculateEndTimeDaysReturnString(e.startTime);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return BasicGoalDetails(goal:e);
+                        }),
+                      ).then((value) {
+                        setState(() {
+                          //fetchData();
+                          basicGoals = null;
+                        });
+                      });
+                    },
+                    child: Container(
+                      width: 1000,
+                      height: 50,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              e.goalName,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  e.goalName,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Container(),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  calculateEndTimeDaysReturnString(e.endTime),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )
+                            ],
                           ),
-                          Expanded(
-                            flex: 2,
-                            child: Container(),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              calculateEndTimeDaysReturnString(e.endTime),
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          )
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                )
             )
         );
       },
@@ -273,13 +257,66 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
 
     if(typeOfGoals=="active"){
       if(activeGoals!=null && activeGoals.length>0)
-        return scrollableView(activeGoals);
+        return Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Active Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                    flex: 10,
+                    child: scrollableView(activeGoals)
+                )
+
+              ],
+            )
+        );
     }else if(typeOfGoals=="complete"){
       if(completedGoals!=null && completedGoals.length>0)
-        return scrollableView(completedGoals);
+        return Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Completed Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                    flex: 10,
+                    child: scrollableView(completedGoals)
+                )
+
+              ],
+            )
+        );
     }else if(typeOfGoals=="incomplete"){
       if(incompleteGoals!=null && incompleteGoals.length>0)
-        return scrollableView(incompleteGoals);
+        return Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "Incomplete Goals",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                    flex: 10,
+                    child: scrollableView(incompleteGoals)
+                )
+              ],
+            )
+        );
     }
     return Container();
 
@@ -300,6 +337,7 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
     
     
   }
+
   /*
   void _refreshData() {
     setState(() {
@@ -352,3 +390,5 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
 
  */
 }
+
+
