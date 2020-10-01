@@ -121,8 +121,6 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                 });
               },
               child: Container(
-                width: 350,
-                height: 100,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
