@@ -168,19 +168,22 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                 e.active=false;
                 e.completed=true;
                 SQLiteBasicGoalDatabaseService().updateBasicGoal(e);
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text(e.goalName+" Completed!!")));
               }else if(direction==DismissDirection.endToStart){
                 //print("Its a left swipe");
                 e.active=false;
                 e.completed=false;
                 SQLiteBasicGoalDatabaseService().updateBasicGoal(e);
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text(e.goalName+" Failed --")));
               }
               setState(() {
                 goals.removeAt(index);
               });
 
               // Then show a snackbar.
-              Scaffold.of(context)
-                  .showSnackBar(SnackBar(content: Text(e.goalName+" dismissed")));
+
             },
             // Show a red background as the item is swiped away.
             background: Container(color: Colors.blue),
@@ -210,8 +213,7 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                       });
                     },
                     child: Container(
-                      width: 1000,
-                      height: 50,
+
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
@@ -293,7 +295,6 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                     flex: 10,
                     child: scrollableView(completedGoals)
                 )
-
               ],
             )
         );
@@ -319,10 +320,9 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
         );
     }
     return Container();
-
   }
 
-  String calculateEndTimeDaysReturnString(DateTime date) {
+  String calculateEndTimeDaysReturnString(DateTime date){
     DateTime now = DateTime.now();
     if(date==null) return "No limit fixed";
     int difference = now.difference(date).inDays;
@@ -334,8 +334,6 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
     }else{
       return "$difference days overdue";
     }
-    
-    
   }
 
   /*
