@@ -218,7 +218,7 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                           Row(
                             children: <Widget>[
                               Expanded(
-                                flex: 1,
+                                flex: 3,
                                 child: Text(
                                   e.goalName,
                                   style: TextStyle(
@@ -226,7 +226,7 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
                                 ),
                               ),
                               Expanded(
-                                flex: 2,
+                                flex: 1,
                                 child: Container(),
                               ),
                               Expanded(
@@ -258,12 +258,13 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
     if(typeOfGoals=="active"){
       if(activeGoals!=null && activeGoals.length>0)
         return Expanded(
+            flex: 4,
             child: Column(
               children: [
                 Expanded(
                   flex: 1,
                   child: Text(
-                    "Active Goals",
+                    "Active Goals ("+activeGoals.length.toString()+")",
                     style: TextStyle(
                         fontWeight: FontWeight.bold),
                   ),
@@ -279,12 +280,13 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
     }else if(typeOfGoals=="complete"){
       if(completedGoals!=null && completedGoals.length>0)
         return Expanded(
+            flex: 2,
             child: Column(
               children: [
                 Expanded(
                   flex: 1,
                   child: Text(
-                    "Completed Goals",
+                    "Completed Goals ("+completedGoals.length.toString()+")",
                     style: TextStyle(
                         fontWeight: FontWeight.bold),
                   ),
@@ -299,12 +301,13 @@ class _BasicGoalsListState extends State<BasicGoalsList> {
     }else if(typeOfGoals=="incomplete"){
       if(incompleteGoals!=null && incompleteGoals.length>0)
         return Expanded(
+            flex: 2,
             child: Column(
               children: [
                 Expanded(
                   flex: 1,
                   child: Text(
-                    "Incomplete Goals",
+                    "Incomplete Goals ("+incompleteGoals.length.toString()+")",
                     style: TextStyle(
                         fontWeight: FontWeight.bold),
                   ),

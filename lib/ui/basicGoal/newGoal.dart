@@ -27,41 +27,45 @@ class _NewBasicGoalForm extends State<NewBasicGoalForm> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: Column(
+        body: Container(child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Center(
-                child: Card(
-              child: InkWell(
-                splashColor: Colors.blue.withAlpha(30),
-                onTap: () {
-                  print('Card tapped.');
-                  //TODO TBD later
-                },
-                child: Container(
-                    child: Column(
-                  children: <Widget>[createForm()],
-                )),
-              ),
-            )),
+            Flexible(
+                fit: FlexFit.loose,
+                child: Center(
+                    child: Card(
+                      child: InkWell(
+                        splashColor: Colors.blue.withAlpha(30),
+                        onTap: () {
+                          print('Card tapped.');
+                          //TODO TBD later
+                        },
+                        child: Container(
+                            child: Column(
+                              children: <Widget>[createForm()],
+                            )),
+                      ),
+                    ))),
           ],
-        ));
+        ),));
   }
 
-  void putInStartDate(DateTime time){
+  void putInStartDate(DateTime time) {
     this._startTimeController = time;
   }
-  void putInEndDate(DateTime time){
+
+  void putInEndDate(DateTime time) {
     this._endTimeController = time;
   }
-
 
   Widget createForm() {
     return Form(
       key: _newBasicGoalFormKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          TextFormField(
+          Flexible(fit: FlexFit.loose, child: TextFormField(
             controller: _goalNameController,
             decoration: const InputDecoration(
               labelText: 'Goal Name',
@@ -72,26 +76,26 @@ class _NewBasicGoalForm extends State<NewBasicGoalForm> {
               }
               return null;
             },
-          ),
-          DateTimeFormField(
+          )),
+          Flexible(fit: FlexFit.loose, child: DateTimeFormField(
             autovalidate: true,
             //firstDate: selectedDate,
             initialValue: selectedDate,
             label: "Start Time",
             onDateSelected: putInStartDate,
-
-          ),
-          DateTimeFormField(
+          )),
+          Flexible(fit: FlexFit.loose, child: DateTimeFormField(
             autovalidate: false,
             enabled: true,
             firstDate: selectedDate,
+            lastDate: selectedDate.add(new Duration(days: 30)),
+            initialValue: selectedDate.add(new Duration(days: 1)),
             label: "End Time",
             onDateSelected: putInEndDate,
-          ),
-
-          Padding(
+          )),
+          Flexible(fit: FlexFit.loose, child: Padding(
             padding:
-                const EdgeInsets.symmetric(vertical: 100.0, horizontal: 100.0),
+            const EdgeInsets.symmetric(vertical: 10.0, horizontal: 100.0),
             child: RaisedButton(
               onPressed: () {
                 if (_newBasicGoalFormKey.currentState.validate()) {
@@ -104,20 +108,22 @@ class _NewBasicGoalForm extends State<NewBasicGoalForm> {
                    */
                   SQLiteBasicGoalDatabaseService().insertOrReplaceBasicGoal(
                       new BasicGoal(
-                        goalName: _goalNameController.text,
-                        startTime: _startTimeController!=null?_startTimeController:selectedDate,
-                        endTime: _endTimeController!=null?_endTimeController:null,
-                        lastUpdated: selectedDate,
-                        active: true,
-                        completed: false
-                      )
-                  );
+                          goalName: _goalNameController.text,
+                          startTime: _startTimeController != null
+                              ? _startTimeController
+                              : selectedDate,
+                          endTime: _endTimeController != null
+                              ? _endTimeController
+                              : null,
+                          lastUpdated: selectedDate,
+                          active: true,
+                          completed: false));
                   Navigator.pop(context);
                 }
               },
               child: Text('Confirm'),
             ),
-          ),
+          )),
         ],
       ),
     );
